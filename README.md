@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## GoalPilot setup
+
+### Environment variables
+
+Real values live only in local, gitignored files. Never commit them.
+
+| File | Variable | What it is |
+| --- | --- | --- |
+| `.env.local` | `DATABASE_URL` | Postgres (Neon) connection string for development |
+| `.env.local` | `DEV_OWNER_ID` | Optional. The owner of all goals until Auth.js is wired up (defaults to `dev-user`; refused in production) |
+| `.env.test.local` | `TEST_DATABASE_URL` | A **separate** database (e.g. a Neon `test` branch). Integration and E2E tests wipe it. Next.js skips `.env.local` in test mode, so it must go here. |
+
+### Commands
+
+- `npm run db:migrate`: create and apply a migration (`prisma migrate dev`)
+- `npm test`: all Vitest projects (`unit`, `ui`, `int`); `npm run test:coverage` enforces 70% lines and branches
+- `npm run test:e2e`: Playwright against `next dev` on port 3100, pointed at the test database
+
 ## Getting Started
 
 First, run the development server:
