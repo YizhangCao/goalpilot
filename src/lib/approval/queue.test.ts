@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { approve, createSuggestion, InvalidTransitionError, reject } from "./queue";
+import { approve, createSuggestion, execute, InvalidTransitionError, reject } from "./queue";
 
 function newSuggestion() {
   return createSuggestion({
@@ -39,6 +39,26 @@ describe("approval queue", () => {
       approve(item);
 
       expect(item.status).toBe("pending");
+    });
+  });
+
+  describe("only an approved item can be executed", () => {
+    it("executing an approved item makes it executed", () => {
+      expect(execute(approve(newSuggestion())).status).toBe("executed");
+    });
+
+    it.each([
+      ["pending", () => newSuggestion()],
+      ["rejected", () => reject(newSuggestion())],
+    ])("a %s item cannot be executed", (_status, make) => {
+      expect(() => execute(make())).toThrow(InvalidTransitionError);
+    });
+
+    it("does not modify the original item", () => {
+      const item = approve(newSuggestion());
+      execute(item);
+
+      expect(item.status).toBe("approved");
     });
   });
 });
