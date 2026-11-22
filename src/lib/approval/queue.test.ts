@@ -61,4 +61,17 @@ describe("approval queue", () => {
       expect(item.status).toBe("approved");
     });
   });
+
+  describe("rejected and executed items can't change again", () => {
+    it.each([
+      ["rejected", () => reject(newSuggestion())],
+      ["executed", () => execute(approve(newSuggestion()))],
+    ])("an item that is %s cannot be approved, rejected or executed", (_status, make) => {
+      const item = make();
+
+      expect(() => approve(item)).toThrow(InvalidTransitionError);
+      expect(() => reject(item)).toThrow(InvalidTransitionError);
+      expect(() => execute(item)).toThrow(InvalidTransitionError);
+    });
+  });
 });
