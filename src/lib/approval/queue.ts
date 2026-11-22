@@ -1,4 +1,4 @@
-export type SuggestionStatus = "pending" | "approved" | "rejected";
+export type SuggestionStatus = "pending" | "approved" | "rejected" | "executed";
 
 export interface NewSuggestion {
   goalId: string;
@@ -30,4 +30,9 @@ export function approve(item: Suggestion): Suggestion {
 export function reject(item: Suggestion): Suggestion {
   if (item.status !== "pending") throw new InvalidTransitionError(item.status, "rejected");
   return { ...item, status: "rejected" };
+}
+
+export function execute(item: Suggestion): Suggestion {
+  if (item.status !== "approved") throw new InvalidTransitionError(item.status, "executed");
+  return { ...item, status: "executed" };
 }
