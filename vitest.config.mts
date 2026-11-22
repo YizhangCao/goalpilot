@@ -25,6 +25,15 @@ export default defineConfig({
       {
         ...shared,
         test: {
+          name: "ui",
+          environment: "jsdom",
+          include: ["src/**/*.test.tsx"],
+          setupFiles: ["test/ui-setup.ts"],
+        },
+      },
+      {
+        ...shared,
+        test: {
           name: "int",
           environment: "node",
           include: ["src/**/*.int.test.ts"],
@@ -38,7 +47,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/generated/**", "src/**/*.test.ts", "src/app/layout.tsx"],
+      exclude: ["src/generated/**", "src/**/*.test.{ts,tsx}", "src/app/layout.tsx"],
       thresholds: { lines: 70, branches: 70 },
     },
   },
