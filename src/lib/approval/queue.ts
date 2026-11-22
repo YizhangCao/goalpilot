@@ -22,17 +22,28 @@ export function createSuggestion(input: NewSuggestion): Suggestion {
   return { ...input, status: "pending" };
 }
 
+const ALLOWED_TRANSITIONS: Record<SuggestionStatus, readonly SuggestionStatus[]> = {
+  pending: ["approved", "rejected"],
+  approved: ["executed"],
+  rejected: [],
+  executed: [],
+};
+
+function transition(item: Suggestion, to: SuggestionStatus): Suggestion {
+  if (!ALLOWED_TRANSITIONS[item.status].includes(to)) {
+    throw new InvalidTransitionError(item.status, to);
+  }
+  return { ...item, status: to };
+}
+
 export function approve(item: Suggestion): Suggestion {
-  if (item.status !== "pending") throw new InvalidTransitionError(item.status, "approved");
-  return { ...item, status: "approved" };
+  return transition(item, "approved");
 }
 
 export function reject(item: Suggestion): Suggestion {
-  if (item.status !== "pending") throw new InvalidTransitionError(item.status, "rejected");
-  return { ...item, status: "rejected" };
+  return transition(item, "rejected");
 }
 
 export function execute(item: Suggestion): Suggestion {
-  if (item.status !== "approved") throw new InvalidTransitionError(item.status, "executed");
-  return { ...item, status: "executed" };
+  return transition(item, "executed");
 }
