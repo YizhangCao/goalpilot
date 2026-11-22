@@ -20,10 +20,21 @@ Writes happen only in the approval flow:
 
 1. The user approves a pending suggestion in the queue (server action).
 2. The server re-checks ownership, status (`pending`) and, for time blocks, that the slot is still free.
-3. V1: the suggestion is marked `approved` and nothing is written to Google. V2: the server creates the calendar event with the user's token, stores the event ID on the suggestion, then marks it `approved`.
+3. The suggestion is marked `approved`. V1 stops here and nothing is written to Google. V2: the server then creates the calendar event with the user's token, stores the event ID on the suggestion, and marks it `executed`.
 4. Every step is written to the audit log.
 
-Rejecting marks the suggestion `rejected`. Suggestion status only moves forward: `pending → approved | rejected` (plus `conflict` when the slot is no longer free).
+Rejecting marks the suggestion `rejected`. Suggestion status only moves forward, as implemented in `src/lib/approval/queue.ts`:
+
+```
+pending → approved → executed
+        ↘ rejected
+```
+
+- Only a `pending` item can be approved or rejected, and only an `approved` item can be executed.
+- `rejected` and `executed` are final; any other move throws `InvalidTransitionError`.
+- Every transition takes the actor's ID and the time (passed in by the caller) and appends `{ from, to, actorId, at }` to the suggestion's `transitions` history, which feeds the audit log.
+
+Future work: a `conflict` status for when the calendar has changed and the slot is no longer free (US-3). The queue does not model it yet.
 
 Because the agent's tool set physically lacks write tools, a manipulated model can at worst create bad pending suggestions, which the user sees and rejects.
 
@@ -48,7 +59,7 @@ A `CoachLink` (user, coach, status `invited | active | revoked`) gates coach acc
 
 - `User`, `Account`, `Session`: Auth.js Prisma adapter tables. Google refresh tokens are stored on `Account`.
 - `Goal`: owner, title, description, targetDate, progress, status, timestamps.
-- `Suggestion`: owner, goal, start, end, reason, status, decidedAt, calendarEventId (V2).
+- `Suggestion`: owner, goal, start, end, reason, status (`pending | approved | rejected | executed`), transitions (actor and time of each status change), calendarEventId (V2).
 - `AuditEvent`: owner, type, summary (JSON), createdAt.
 - V2: `DailyBrief` (owner, date, content), `CoachLink`, `Comment` (goal, author, body).
 
