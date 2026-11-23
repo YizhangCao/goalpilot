@@ -22,6 +22,27 @@ export default defineConfig({
           exclude: ["src/**/*.int.test.ts"],
         },
       },
+      {
+        ...shared,
+        test: {
+          name: "ui",
+          environment: "jsdom",
+          include: ["src/**/*.test.tsx"],
+          setupFiles: ["test/ui-setup.ts"],
+        },
+      },
+      {
+        ...shared,
+        test: {
+          name: "int",
+          environment: "node",
+          include: ["src/**/*.int.test.ts"],
+          globalSetup: ["test/int-global-setup.ts"],
+          setupFiles: ["test/int-setup.ts"],
+          // Tests share one database; run files one at a time.
+          fileParallelism: false,
+        },
+      },
     ],
     coverage: {
       provider: "v8",
