@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GoalStatus {
+  not_started
+  in_progress
+  done
+}
+
+model Goal {
+  id          String     @id @default(cuid())
+  // Plain string until Auth.js lands; it will then reference User.id.
+  ownerId     String
+  title       String
+  description String?
+  targetDate  DateTime
+  progress    Int        @default(0)
+  status      GoalStatus @default(not_started)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([ownerId, targetDate])
+}
